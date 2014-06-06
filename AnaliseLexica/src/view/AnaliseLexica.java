@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package analiselexica;
+package view;
 
 /**
  *
@@ -14,6 +14,7 @@ public class AnaliseLexica {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        Compilador compilador = new Compilador();
+        compilador.setVisible(true);
     }
 }
