@@ -5,12 +5,18 @@
 package view;
 
 import entidades.Arquivo;
+import gals.LexicalError;
+import gals.Lexico;
+import gals.Token;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -72,7 +78,6 @@ public class Compilador extends javax.swing.JFrame {
         jMenuItem1.getAccessibleContext().setAccessibleParent(jMenu1);
 
         jMenuItem3.setText("Sair");
-        jMenuItem3.setActionCommand("Sair");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Sair(evt);
@@ -86,6 +91,11 @@ public class Compilador extends javax.swing.JFrame {
         jMenu2.setText("Léxico");
 
         jMenuItem4.setText("Compilar");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compilar(evt);
+            }
+        });
         jMenu2.add(jMenuItem4);
         jMenuItem4.getAccessibleContext().setAccessibleParent(jMenu2);
 
@@ -151,6 +161,25 @@ public class Compilador extends javax.swing.JFrame {
             new Arquivo(jTextArea1.getText()).gravarArquivo(file);
         }
     }//GEN-LAST:event_SalvarArquivo
+
+    private void compilar(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compilar
+      
+        if (jTextArea1.getText().equals("")) {
+            JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
+            return;
+        }
+        Lexico analisadorLexico = new Lexico(new StringReader(jTextArea1.getText()));
+        try {
+            Token t = null;
+            while ((t = analisadorLexico.nextToken()) != null) {
+                System.out.println(t.getLexeme());
+            }
+            JOptionPane.showMessageDialog(null, "Análise Léxica efetuada com sucesso");
+        } catch (LexicalError e) {
+            JOptionPane.showMessageDialog(null,"Erro: "+e.getMessage()+ ",  Posição: " + e.getPosition());
+            System.out.println("Erro: "+e.getMessage()+ "Posição: " + e.getPosition());
+        }
+    }//GEN-LAST:event_compilar
 
     /**
      * @param args the command line arguments
