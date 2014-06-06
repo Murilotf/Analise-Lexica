@@ -114,14 +114,14 @@ public class Compilador extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void AbrirArquivo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArquivo
-       
+
         JFileChooser chooser = new JFileChooser();
         String caminho = "";
         int retorno = chooser.showOpenDialog(null);
-         if (retorno == JFileChooser.APPROVE_OPTION) {
+        if (retorno == JFileChooser.APPROVE_OPTION) {
             caminho = chooser.getSelectedFile().getAbsolutePath();  // o getSelectedFile pega o arquivo e o getAbsolutePath retorna uma string contendo o endereço.
+            jTextArea1.setText(new Arquivo().abrirArquivo(caminho));
         }
-          jTextArea1.setText(new Arquivo(null).abrirArquivo(caminho));
     }//GEN-LAST:event_AbrirArquivo
 
     private void Sair(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Sair
@@ -130,34 +130,31 @@ public class Compilador extends javax.swing.JFrame {
 
     private void SalvarArquivo(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SalvarArquivo
 
-        System.out.println(jTextArea1.getText());
-        
-       JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser();
         String caminho = "";
         FileWriter file = null;
         int retorno = chooser.showSaveDialog(null); // showSaveDialog retorna um inteiro , e ele ira determinar que o chooser será para salvar.
-        
+
         if (retorno == JFileChooser.APPROVE_OPTION) {
             caminho = chooser.getSelectedFile().getAbsolutePath();  // o getSelectedFile pega o arquivo e o getAbsolutePath retorna uma string contendo o endereço.
-        }
-        if (!caminho.equals("")) {
-            try{
-            file = new FileWriter(caminho + ".txt");
-            }catch(IOException e){
-                System.out.println("Erro ao salvar arquivo. "+e.getMessage());
-            }
-        }else{
-            System.out.println("Não é possivel salvar um arquivo sem um nome");
-        }
-          new Arquivo(jTextArea1.getText()).gravarArquivo(file);
+            try {
+                if (!(caminho.endsWith(".txt") || caminho.endsWith(".lsi"))) {
+                    file = new FileWriter(caminho + ".txt");
+                } else {
+                    file = new FileWriter(caminho);
+                }
 
+            } catch (Exception e) {
+                System.out.println("Erro ao salvar arquivo. " + e.getMessage());
+            }
+
+            new Arquivo(jTextArea1.getText()).gravarArquivo(file);
+        }
     }//GEN-LAST:event_SalvarArquivo
 
-        /**
-         * @param args the command line arguments
-         */
-    
-
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

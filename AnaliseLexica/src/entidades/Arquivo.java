@@ -19,6 +19,11 @@ public class Arquivo {
 
     private String texto;
 
+    public Arquivo() {
+    }
+    
+    
+
     public Arquivo(String texto) {
         this.texto = texto;
     }
@@ -32,32 +37,22 @@ public class Arquivo {
     }
 
     public void gravarArquivo(FileWriter arq) {
-
-         PrintWriter gravarArq = null;
                 
-        try {
-            
-            
-            gravarArq = new PrintWriter(new BufferedWriter(arq));
+        try (PrintWriter gravarArq = new PrintWriter(new BufferedWriter(arq))) {
             gravarArq.println(texto);
             gravarArq.close();
-        } finally{
-            gravarArq.close();
+        }catch(Exception e){
+            System.out.println("erro ao salvar o arquivo. Detalhes: "+e.getMessage());
         }
     }
 
     public String abrirArquivo(String caminho) {
         String arquivo = null;
-        Scanner leitor = null;
-        try {
-            
-            leitor = new Scanner(new File(caminho));
+        try (Scanner leitor = new Scanner(new File(caminho))) {
             arquivo = leitor.useDelimiter("\\|\\n").next();           
-
-        } catch (IOException e) {
-            System.out.println("erro ao abrir arquivo. Detalhes:" + e.getMessage());
-        }finally{
             leitor.close();
+        } catch (IOException e) {
+            System.out.println("erro ao abrir arquivo. Detalhes: " + e.getMessage());
         }
         return arquivo;
 
