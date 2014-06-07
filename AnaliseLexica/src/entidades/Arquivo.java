@@ -38,8 +38,10 @@ public class Arquivo {
 
     public void gravarArquivo(FileWriter arq) {
                 
+            String linhas[] = texto.split("\n");  
         try (PrintWriter gravarArq = new PrintWriter(new BufferedWriter(arq))) {
-            gravarArq.println(texto);
+            for(int i=0; i<linhas.length; i++)   
+            gravarArq.println(linhas[i]);  
             gravarArq.close();
         }catch(Exception e){
             System.out.println("erro ao salvar o arquivo. Detalhes: "+e.getMessage());
