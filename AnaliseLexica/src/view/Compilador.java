@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
  */
 public class Compilador extends javax.swing.JFrame {
 
-    Lexico analisadorLexico;
+   
 
     /**
      * Creates new form Compilador
@@ -187,13 +187,10 @@ public class Compilador extends javax.swing.JFrame {
 
     private void analiseLexica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseLexica
 
-        if (jTextArea1.getText().equals("")) {
-            JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
+       Lexico analisadorLexico = getAnalisadorLexico();
+        if (analisadorLexico == null) {
             return;
         }
-
-        analisadorLexico = new Lexico(new StringReader(jTextArea1.getText()));
-
         try {
             Token t = null;
             while ((t = analisadorLexico.nextToken()) != null) {
@@ -212,8 +209,9 @@ public class Compilador extends javax.swing.JFrame {
     }//GEN-LAST:event_analiseLexica
 
     private void analiseSintatica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseSintatica
+      
+        Lexico analisadorLexico = getAnalisadorLexico();
         if (analisadorLexico == null) {
-            JOptionPane.showMessageDialog(null, "É necessário realizar primeiramente a análise léxica.");
             return;
         }
         Sintatico analisadorSintatico = new Sintatico();
@@ -233,6 +231,16 @@ public class Compilador extends javax.swing.JFrame {
 
     }//GEN-LAST:event_analiseSintatica
 
+    
+    
+    private Lexico getAnalisadorLexico(){
+          if (jTextArea1.getText().equals("")) {
+            JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
+            return null;
+        }
+
+        return  new Lexico(new StringReader(jTextArea1.getText()));
+    }
     /**
      * @param args the command line arguments
      */
