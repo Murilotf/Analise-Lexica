@@ -200,6 +200,7 @@ public class Compilador extends javax.swing.JFrame {
         } catch (LexicalError e) {
             JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage() + ",  Posição: " + e.getPosition());
             System.out.println("Erro: " + e.getMessage() + "Posição: " + e.getPosition());
+            jTextArea1.setCaretPosition(e.getPosition());
         }
 
 
@@ -222,6 +223,7 @@ public class Compilador extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
         } catch (SyntaticError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
+            jTextArea1.setCaretPosition(ex.getPosition());
         } catch (SemanticError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
 
