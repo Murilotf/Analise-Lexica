@@ -222,7 +222,6 @@ public class Compilador extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
         } catch (SyntaticError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
-            Logger.getLogger(Compilador.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SemanticError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
 
