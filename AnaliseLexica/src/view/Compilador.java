@@ -29,11 +29,14 @@ import javax.swing.JOptionPane;
  */
 public class Compilador extends javax.swing.JFrame {
 
+    Lexico analisadorLexico;
+
     /**
      * Creates new form Compilador
      */
     public Compilador() {
         initComponents();
+
 
     }
 
@@ -46,6 +49,7 @@ public class Compilador extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuBar2 = new javax.swing.JMenuBar();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -55,6 +59,8 @@ public class Compilador extends javax.swing.JFrame {
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,16 +101,28 @@ public class Compilador extends javax.swing.JFrame {
 
         jMenu2.setText("Léxico");
 
-        jMenuItem4.setText("Compilar");
+        jMenuItem4.setText("Analisar");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compilar(evt);
+                analiseLexica(evt);
             }
         });
         jMenu2.add(jMenuItem4);
         jMenuItem4.getAccessibleContext().setAccessibleParent(jMenu2);
 
         jMenuBar1.add(jMenu2);
+
+        jMenu4.setText("Sintático");
+
+        jMenuItem5.setText("Analisar");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analiseSintatica(evt);
+            }
+        });
+        jMenu4.add(jMenuItem5);
+
+        jMenuBar1.add(jMenu4);
 
         setJMenuBar(jMenuBar1);
 
@@ -167,19 +185,41 @@ public class Compilador extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_SalvarArquivo
 
-    private void compilar(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compilar
+    private void analiseLexica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseLexica
 
         if (jTextArea1.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
             return;
         }
 
+        analisadorLexico = new Lexico(new StringReader(jTextArea1.getText()));
 
-        Lexico analisadorLexico = new Lexico(new StringReader(jTextArea1.getText()));
+        try {
+            Token t = null;
+            while ((t = analisadorLexico.nextToken()) != null) {
+                System.out.println(t.getLexeme());
+            }
+            JOptionPane.showMessageDialog(null, "Análise Léxica efetuada com sucesso");
+        } catch (LexicalError e) {
+            JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage() + ",  Posição: " + e.getPosition());
+            System.out.println("Erro: " + e.getMessage() + "Posição: " + e.getPosition());
+        }
+
+
+
+
+
+    }//GEN-LAST:event_analiseLexica
+
+    private void analiseSintatica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseSintatica
+        if (analisadorLexico == null) {
+            JOptionPane.showMessageDialog(null, "É necessário realizar primeiramente a análise léxica.");
+            return;
+        }
         Sintatico analisadorSintatico = new Sintatico();
         try {
             analisadorSintatico.parse(analisadorLexico, null);
-            JOptionPane.showMessageDialog(null, "Análise Léxica e Sintática efetuada com sucesso");
+            JOptionPane.showMessageDialog(null, "Análise Sintática efetuada com sucesso");
         } catch (LexicalError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
         } catch (SyntaticError ex) {
@@ -190,7 +230,8 @@ public class Compilador extends javax.swing.JFrame {
 
         }
 
-    }//GEN-LAST:event_compilar
+
+    }//GEN-LAST:event_analiseSintatica
 
     /**
      * @param args the command line arguments
@@ -229,11 +270,14 @@ public class Compilador extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
