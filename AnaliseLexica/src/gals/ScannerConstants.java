@@ -128,7 +128,7 @@ public interface ScannerConstants
         "",
         "Esperava-se */",
         "",
-        "Erro identificando num_int",
+        "Numero inteiro mal formatado",
         "",
         "",
         "",
@@ -146,5 +146,5 @@ public interface ScannerConstants
         "",
         ""
     };
-
+    
 }
