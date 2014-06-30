@@ -16,5 +16,7 @@ public class AnaliseLexica {
     public static void main(String[] args) {
         Compilador compilador = new Compilador();
         compilador.setVisible(true);
+        compilador.setSize(955, 589);  
+        compilador.setResizable(false);  
     }
 }

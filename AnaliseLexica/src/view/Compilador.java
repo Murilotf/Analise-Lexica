@@ -11,15 +11,8 @@ import gals.SemanticError;
 import gals.Sintatico;
 import gals.SyntaticError;
 import gals.Token;
-import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -28,8 +21,6 @@ import javax.swing.JOptionPane;
  * @author BOSS
  */
 public class Compilador extends javax.swing.JFrame {
-
-   
 
     /**
      * Creates new form Compilador
@@ -54,6 +45,7 @@ public class Compilador extends javax.swing.JFrame {
         jTextArea1 = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -69,6 +61,14 @@ public class Compilador extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTextArea1);
 
         jMenu1.setText("Arquivo");
+
+        jMenuItem6.setText("Novo");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem6);
 
         jMenuItem2.setText("Salvar");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -131,16 +131,16 @@ public class Compilador extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 668, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addGap(25, 25, 25)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 882, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(48, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(32, 32, 32)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addGap(24, 24, 24)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 503, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         pack();
@@ -152,8 +152,13 @@ public class Compilador extends javax.swing.JFrame {
         String caminho = "";
         int retorno = chooser.showOpenDialog(null);
         if (retorno == JFileChooser.APPROVE_OPTION) {
-            caminho = chooser.getSelectedFile().getAbsolutePath();  // o getSelectedFile pega o arquivo e o getAbsolutePath retorna uma string contendo o endereço.
-            jTextArea1.setText(new Arquivo().abrirArquivo(caminho));
+            caminho = chooser.getSelectedFile().getAbsolutePath();
+            if ((caminho.endsWith(".txt") || caminho.endsWith(".lsi") || caminho.endsWith(".TXT") || caminho.endsWith(".LSI"))) {
+                jTextArea1.setText(new Arquivo().abrirArquivo(caminho));
+            } else {
+                JOptionPane.showMessageDialog(null, "Somente arquivos .txt ou .lsi");
+                AbrirArquivo(evt);
+            }
         }
     }//GEN-LAST:event_AbrirArquivo
 
@@ -166,28 +171,32 @@ public class Compilador extends javax.swing.JFrame {
         JFileChooser chooser = new JFileChooser();
         String caminho = "";
         FileWriter file = null;
-        int retorno = chooser.showSaveDialog(null); // showSaveDialog retorna um inteiro , e ele ira determinar que o chooser será para salvar.
+        int retorno = chooser.showSaveDialog(null);
 
         if (retorno == JFileChooser.APPROVE_OPTION) {
-            caminho = chooser.getSelectedFile().getAbsolutePath();  // o getSelectedFile pega o arquivo e o getAbsolutePath retorna uma string contendo o endereço.
+            caminho = chooser.getSelectedFile().getAbsolutePath();
             try {
-                if (!(caminho.endsWith(".txt") || caminho.endsWith(".lsi"))) {
-                    file = new FileWriter(caminho + ".txt");
-                } else {
+                if ((caminho.endsWith(".txt") || caminho.endsWith(".lsi") || caminho.endsWith(".TXT") || caminho.endsWith(".LSI"))) {
                     file = new FileWriter(caminho);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Somente arquivos .txt ou .lsi");
                 }
 
             } catch (Exception e) {
                 System.out.println("Erro ao salvar arquivo. " + e.getMessage());
             }
 
-            new Arquivo(jTextArea1.getText()).gravarArquivo(file);
+            if (file == null) {
+                SalvarArquivo(evt);
+            } else {
+                new Arquivo(jTextArea1.getText()).gravarArquivo(file);
+            }
         }
     }//GEN-LAST:event_SalvarArquivo
 
     private void analiseLexica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseLexica
 
-       Lexico analisadorLexico = getAnalisadorLexico();
+        Lexico analisadorLexico = getAnalisadorLexico();
         if (analisadorLexico == null) {
             return;
         }
@@ -210,7 +219,7 @@ public class Compilador extends javax.swing.JFrame {
     }//GEN-LAST:event_analiseLexica
 
     private void analiseSintatica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseSintatica
-      
+
         Lexico analisadorLexico = getAnalisadorLexico();
         if (analisadorLexico == null) {
             return;
@@ -221,6 +230,7 @@ public class Compilador extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Análise Sintática efetuada com sucesso");
         } catch (LexicalError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
+            jTextArea1.setCaretPosition(ex.getPosition());
         } catch (SyntaticError ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ",  Posição: " + ex.getPosition());
             jTextArea1.setCaretPosition(ex.getPosition());
@@ -232,16 +242,19 @@ public class Compilador extends javax.swing.JFrame {
 
     }//GEN-LAST:event_analiseSintatica
 
-    
-    
-    private Lexico getAnalisadorLexico(){
-          if (jTextArea1.getText().equals("")) {
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        jTextArea1.setText("");
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private Lexico getAnalisadorLexico() {
+        if (jTextArea1.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
             return null;
         }
 
-        return  new Lexico(new StringReader(jTextArea1.getText()));
+        return new Lexico(new StringReader(jTextArea1.getText()));
     }
+
     /**
      * @param args the command line arguments
      */
@@ -287,6 +300,7 @@ public class Compilador extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
