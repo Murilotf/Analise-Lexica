@@ -226,6 +226,7 @@ public class Compilador extends javax.swing.JFrame {
         }
         Sintatico analisadorSintatico = new Sintatico();
         try {
+            analisadorSintatico.setEstadoAnaliseSemantica(false);
             analisadorSintatico.parse(analisadorLexico, null);
             JOptionPane.showMessageDialog(null, "Análise Sintática efetuada com sucesso");
         } catch (LexicalError ex) {
