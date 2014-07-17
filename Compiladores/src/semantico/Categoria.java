@@ -10,6 +10,8 @@ package semantico;
  */
 public enum Categoria {
 
+    //comentario
+    
     PROGRAMA, CONSTANTE, VARIAVEL, METODO, PARAMETRO
 
 }
