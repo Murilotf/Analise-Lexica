@@ -8,6 +8,7 @@ import entidades.Arquivo;
 import gals.LexicalError;
 import gals.Lexico;
 import gals.SemanticError;
+import gals.Semantico;
 import gals.Sintatico;
 import gals.SyntaticError;
 import gals.Token;
@@ -53,6 +54,8 @@ public class Compilador extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem5 = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItem7 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -123,6 +126,19 @@ public class Compilador extends javax.swing.JFrame {
         jMenu4.add(jMenuItem5);
 
         jMenuBar1.add(jMenu4);
+
+        jMenu3.setText("Semantico");
+
+        jMenuItem7.setText("Analisar");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analiseSemantica(evt);
+            }
+        });
+        jMenu3.add(jMenuItem7);
+        jMenuItem7.getAccessibleContext().setAccessibleName("Compilar");
+
+        jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
 
@@ -247,6 +263,31 @@ public class Compilador extends javax.swing.JFrame {
         jTextArea1.setText("");
     }//GEN-LAST:event_jMenuItem6ActionPerformed
 
+    private void analiseSemantica(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analiseSemantica
+        Lexico analisadorLexico = getAnalisadorLexico();
+         if (analisadorLexico == null) {
+            return;
+        }
+        Sintatico analisadorSintatico = new Sintatico();
+        Semantico semantica = new Semantico();
+
+        try {
+            analisadorSintatico.setEstadoAnaliseSemantica(true);
+            analisadorSintatico.parse(analisadorLexico, semantica);
+            JOptionPane.showMessageDialog(null, "Análise Semântica efetuada com sucesso");
+        } catch (LexicalError ex) {
+            JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ".  Posição: " + ex.getPosition());
+            jTextArea1.setCaretPosition(ex.getPosition());
+        } catch (SyntaticError ex) {
+            JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ".  Posição: " + ex.getPosition());
+            jTextArea1.setCaretPosition(ex.getPosition());
+        } catch (SemanticError ex) {
+            JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage() + ".  Posição: " + ex.getPosition());
+            jTextArea1.setCaretPosition(ex.getPosition());
+
+        }
+    }//GEN-LAST:event_analiseSemantica
+
     private Lexico getAnalisadorLexico() {
         if (jTextArea1.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "É necessário informar pelo menos um caractere para ser analisado!");
@@ -293,6 +334,7 @@ public class Compilador extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuBar jMenuBar2;
@@ -302,6 +344,7 @@ public class Compilador extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables

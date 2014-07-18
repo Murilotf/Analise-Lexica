@@ -59,7 +59,7 @@ public class Sintatico implements Constants {
         } else // isSemanticAction(x)
         {
 
-            if (estadoAnaliseSemantica == true) {
+            if (estadoAnaliseSemantica) {
                 semanticAnalyser.executeAction(x - FIRST_SEMANTIC_ACTION, previousToken);
             }
             return false;
