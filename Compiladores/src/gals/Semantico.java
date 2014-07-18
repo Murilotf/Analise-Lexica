@@ -208,6 +208,7 @@ public class Semantico implements Constants {
                         throw new SemanticError("Tipo inv. p/ leitura", token.getPosition());
                     }
                 }
+                /*Gera Cód. para leitura*/
             }
         }
     }
