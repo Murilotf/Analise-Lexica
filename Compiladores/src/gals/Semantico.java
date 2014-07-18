@@ -2,11 +2,14 @@ package gals;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import javax.swing.JOptionPane;
 import semantico.Categoria;
 import semantico.ContextoLID;
 import semantico.IDConstante;
+import semantico.IDMetodo;
 import semantico.IDParametro;
 import semantico.IDVariavel;
 import semantico.Identificador;
@@ -21,6 +24,8 @@ public class Semantico implements Constants {
 
     private TabelaSimbolos ts;
     private Stack<Integer> pilhaDeslocamento = new Stack<>();
+    private Stack<Integer> pilhaIDMetodo = new Stack<>();
+    private Stack<Boolean> pilhaRetorno = new Stack<>();
     private int nivelAtual;
     private ContextoLID contextoLID;
     private int primeiroID;
@@ -33,9 +38,16 @@ public class Semantico implements Constants {
     private String valConst;
     private int numElementos;
     private int NPF;
+    private List<IDParametro> listIDsParametro = new ArrayList<>();
+    private boolean resultadoNulo;
+    private Tipo tpResultadoMetodo;
 
     public void incrementaNivelAtual() {
         nivelAtual++;
+    }
+
+    public void decrementaNivelAtual() {
+        nivelAtual--;
     }
 
     public void incrementaNPF() {
@@ -243,27 +255,46 @@ public class Semantico implements Constants {
         categoriaAtual = Categoria.VARIAVEL;
     }
 
-    
-    //fiquei confuso aqui
     public void execAcao117(Token token) throws SemanticError {
 
         if (ts.isExisteIdentificadorNesteNivel(nivelAtual, token.getLexeme())) {
             throw new SemanticError("Id já declarado", token.getPosition());
-        } else {
-            ts.adicionarIdentificador(new IDParametro(token.getLexeme(), Categoria.METODO, nivelAtual));
-            NPF = 0;
-            pilhaDeslocamento.push(0);
-            incrementaNivelAtual();
         }
+        ts.adicionarIdentificador(new IDMetodo(token.getLexeme(), Categoria.METODO, nivelAtual));
+        NPF = 0;
+        pilhaDeslocamento.push(0);
+        pilhaIDMetodo.push(ts.getSize() - 1);
+        qtdIDs = 0;
+        listIDsParametro = new ArrayList<>();
+        incrementaNivelAtual();
+
     }
 
     public void execAcao118(Token token) throws SemanticError {
+        IDMetodo iDMetodo;
+        iDMetodo = (IDMetodo) ts.getIdentificador(pilhaIDMetodo.peek());
+        iDMetodo.setNumeroParametros(NPF);
+        iDMetodo.setiDParametros(listIDsParametro);
     }
 
     public void execAcao119(Token token) throws SemanticError {
+        IDMetodo iDMetodo;
+        iDMetodo = (IDMetodo) ts.getIdentificador(pilhaIDMetodo.peek());
+        if (resultadoNulo) {
+            pilhaRetorno.push(false);
+        } else {
+            iDMetodo.setTipo(tpResultadoMetodo);
+            pilhaRetorno.push(true);
+        }
+        iDMetodo.setResultadoNulo(resultadoNulo);
     }
 
     public void execAcao120(Token token) throws SemanticError {
+        ts.removeNivelAtual(nivelAtual);
+        decrementaNivelAtual();
+        pilhaDeslocamento.pop();
+        pilhaIDMetodo.pop();
+        pilhaRetorno.pop();
     }
 
     public void execAcao121(Token token) throws SemanticError {
