@@ -13,6 +13,7 @@ import semantico.IDMetodo;
 import semantico.IDParametro;
 import semantico.IDVariavel;
 import semantico.Identificador;
+import semantico.MecanismoDePassagem;
 import semantico.SubCategoria;
 import semantico.SubCategoriasVariavel;
 import semantico.TabelaSimbolos;
@@ -41,6 +42,7 @@ public class Semantico implements Constants {
     private List<IDParametro> listIDsParametro = new ArrayList<>();
     private boolean resultadoNulo;
     private Tipo tpResultadoMetodo;
+    private MecanismoDePassagem mecanismoPassagem;
 
     public void incrementaNivelAtual() {
         nivelAtual++;
@@ -298,15 +300,52 @@ public class Semantico implements Constants {
     }
 
     public void execAcao121(Token token) throws SemanticError {
+
+        contextoLID = ContextoLID.PAR_FORMAL;
+        primeiroID = ts.getSize();
+        qtdIDs = 0;
+
     }
 
     public void execAcao122(Token token) throws SemanticError {
+
+        ultimoID = primeiroID + ts.getSize();
+
     }
 
     public void execAcao123(Token token) throws SemanticError {
+
+        if (tipoAtual == Tipo.CADEIA) {
+            subCategoria = SubCategoria.CADEIA;
+            return;
+        }
+        subCategoria = SubCategoria.PRE_DEFINIDO;
+        
+        
+        if (subCategoria != SubCategoria.PRE_DEFINIDO) {
+            throw new SemanticError("Par devem ser de tipo pré-def.", token.getPosition());
+        } else {
+            int posicao = primeiroID;            
+            do {                
+                int deslocamento = this.pilhaDeslocamento.pop();
+                Identificador simbolo = ts.getIdentificador((posicao));
+                IDParametro parametro = new IDParametro(simbolo.getNome(), simbolo.getCategoria(), simbolo.getNivel());
+                parametro.setCategoria(Categoria.PARAMETRO);
+                parametro.setTipo(tipoAtual);
+                parametro.setMecanismoDePassagem(mecanismoPassagem);
+                parametro.setDeslocamento(deslocamento);
+                deslocamento++;                
+                pilhaDeslocamento.push(deslocamento);
+                ts.adicionarIdentificadorComPosicao((posicao), parametro);
+                listIDsParametro.add(parametro);
+                posicao++;
+            } while (posicao <= this.ultimoID - 1);
+        }
     }
 
     public void execAcao124(Token token) throws SemanticError {
+        
+        
     }
 
     public void execAcao125(Token token) throws SemanticError {
