@@ -20,6 +20,7 @@ import semantico.SubCategoriasVariavel;
 import semantico.TabelaSimbolos;
 import semantico.Tipo;
 import semantico.TipoIDVariavel;
+import semantico.TipoOpRel;
 import semantico.Utils;
 
 public class Semantico implements Constants {
@@ -30,7 +31,9 @@ public class Semantico implements Constants {
     private Stack<Boolean> pilhaRetorno;
     private Stack<Integer> pPOSID;
     private Stack<Tipo> pTipoExpr;
+    private Stack<Tipo> pTipoExprSimples;
     private Stack<Tipo> pTipoVarIndexada;
+    private Stack<TipoOpRel> pOpRel;
     private Stack<Stack<IDParametro>> pIDsParametro;
     private Stack<ContextoEXPR> pContextoEXPR;
     private Stack<Integer> pNPA;
@@ -51,6 +54,7 @@ public class Semantico implements Constants {
     private boolean resultadoNulo;
     private Tipo tpResultadoMetodo;
     private MecanismoDePassagem mecanismoPassagem;
+    private Stack<MecanismoDePassagem> pilhaEReferencia;
     private boolean temRetorno = false;
 
     public void incrementaNivelAtual() {
@@ -76,9 +80,12 @@ public class Semantico implements Constants {
         pilhaRetorno = new Stack<>();
         pPOSID = new Stack<>();
         pTipoExpr = new Stack<>();
+        pTipoExprSimples = new Stack<>();
         pTipoVarIndexada = new Stack<>();
+        pOpRel = new Stack<TipoOpRel>();
         pIDsParametro = new Stack<>();
         pNPA = new Stack<>();
+        pilhaEReferencia = new Stack<MecanismoDePassagem>();
     }
 
     public void executeAction(int action, Token token) throws SemanticError {
@@ -531,31 +538,93 @@ public class Semantico implements Constants {
         }
     }
 
+    //VERIFICAR NOVAMENTE, OS 2 THROWS NO MEIO, PRECISAM?
     public void execAcao141(Token token) throws SemanticError {
+        if (pContextoEXPR.peek() == ContextoEXPR.parAtual) {
+
+            int NPA = pNPA.pop();
+
+            if (!pIDsParametro.peek().isEmpty()) {
+                Tipo tipoE = pTipoExpr.pop();
+                IDParametro iDParametro = pIDsParametro.peek().pop();
+                MecanismoDePassagem eRef = pilhaEReferencia.pop();
+
+                if (tipoE != iDParametro.getTipo()) {
+                    if (!(iDParametro.getTipo() == Tipo.REAL && tipoE == Tipo.INTEIRO) && !(iDParametro.getTipo() == Tipo.CADEIA && tipoE == Tipo.CARACTER)) {
+                        throw new SemanticError("Não há correpondecia entre parametro Atual e parametro Formal", token.getPosition());
+                    }
+                }
+
+                if (iDParametro.getMecanismoDePassagem() != eRef) {
+                    if (iDParametro.getMecanismoDePassagem() == MecanismoDePassagem.REFERENCIA) {
+                        throw new SemanticError("Esperava passagem por Referencia", token.getPosition());
+                    }
+                }
+            }
+            NPA++;
+            this.pNPA.push(NPA);
+        }
+        if (pContextoEXPR.peek() == ContextoEXPR.impressão) {
+            Tipo tipoExp = pTipoExpr.pop();
+            if (tipoExp == Tipo.BOOLEANO) {
+                throw new SemanticError("Tipo invalido para impressão", token.getPosition());
+            }
+        }
+
     }
 
     public void execAcao142(Token token) throws SemanticError {
+        pTipoExpr.push(pTipoExprSimples.pop());
+
     }
 
+    //VERIFICAR NOVAMENTE
     public void execAcao143(Token token) throws SemanticError {
+
+        Tipo tipoExp = pTipoExpr.pop();
+        Tipo tipoExpSimples = pTipoExprSimples.pop();
+
+        if (tipoExp != tipoExpSimples) {
+            if ((tipoExp == Tipo.INTEIRO && tipoExpSimples == Tipo.REAL) || (tipoExp == Tipo.REAL && tipoExpSimples == Tipo.INTEIRO)
+                    || (tipoExp == Tipo.CADEIA && tipoExpSimples == Tipo.CARACTER) || (tipoExp == Tipo.CARACTER && tipoExpSimples == Tipo.CADEIA)) {
+                pTipoExpr.push(Tipo.BOOLEANO);
+            } else {
+                throw new SemanticError("Operandos incompatíveis", token.getPosition());
+            }
+        } else {
+            this.pTipoExpr.push(Tipo.BOOLEANO);
+        }
+
+        if (!this.pContextoEXPR.isEmpty() && this.pContextoEXPR.peek() == ContextoEXPR.parAtual) {
+            pilhaEReferencia.pop();
+            pilhaEReferencia.push(MecanismoDePassagem.VALOR);
+        }
+
+
     }
 
     public void execAcao144(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Igual);
     }
 
     public void execAcao145(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Menor);
     }
 
     public void execAcao146(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Maior);
     }
 
     public void execAcao147(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Maior_Igual);
     }
 
     public void execAcao148(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Menor_Igual);
     }
 
     public void execAcao149(Token token) throws SemanticError {
+        pOpRel.push(TipoOpRel.Op_Diferente);
     }
 
     public void execAcao150(Token token) throws SemanticError {
