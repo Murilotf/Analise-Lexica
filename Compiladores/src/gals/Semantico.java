@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.JOptionPane;
 import semantico.Categoria;
+import semantico.ContextoEXPR;
 import semantico.ContextoLID;
 import semantico.IDConstante;
 import semantico.IDMetodo;
@@ -24,9 +25,15 @@ import semantico.Utils;
 public class Semantico implements Constants {
 
     private TabelaSimbolos ts;
-    private Stack<Integer> pilhaDeslocamento = new Stack<>();
-    private Stack<Integer> pilhaIDMetodo = new Stack<>();
-    private Stack<Boolean> pilhaRetorno = new Stack<>();
+    private Stack<Integer> pilhaDeslocamento;
+    private Stack<Integer> pilhaIDMetodo;
+    private Stack<Boolean> pilhaRetorno;
+    private Stack<Integer> pPOSID;
+    private Stack<Tipo> pTipoExpr;
+    private Stack<Tipo> pTipoVarIndexada;
+    private Stack<Stack<IDParametro>> pIDsParametro;
+    private Stack<ContextoEXPR> pContextoEXPR;
+    private Stack<Integer> pNPA;
     private int nivelAtual;
     private ContextoLID contextoLID;
     private int primeiroID;
@@ -36,6 +43,7 @@ public class Semantico implements Constants {
     private SubCategoria subCategoria;
     private Tipo tipoAtual;
     private Tipo tipoConst;
+    private Tipo tipoLadoEsq;
     private String valConst;
     private int numElementos;
     private int NPF;
@@ -43,6 +51,7 @@ public class Semantico implements Constants {
     private boolean resultadoNulo;
     private Tipo tpResultadoMetodo;
     private MecanismoDePassagem mecanismoPassagem;
+    private boolean temRetorno = false;
 
     public void incrementaNivelAtual() {
         nivelAtual++;
@@ -61,7 +70,15 @@ public class Semantico implements Constants {
     }
 
     public Semantico() {
-        this.ts = new TabelaSimbolos();
+        ts = new TabelaSimbolos();
+        pilhaDeslocamento = new Stack<>();
+        pilhaIDMetodo = new Stack<>();
+        pilhaRetorno = new Stack<>();
+        pPOSID = new Stack<>();
+        pTipoExpr = new Stack<>();
+        pTipoVarIndexada = new Stack<>();
+        pIDsParametro = new Stack<>();
+        pNPA = new Stack<>();
     }
 
     public void executeAction(int action, Token token) throws SemanticError {
@@ -253,7 +270,6 @@ public class Semantico implements Constants {
     }
 
     public void execAcao116(Token token) throws SemanticError {
-
         categoriaAtual = Categoria.VARIAVEL;
     }
 
@@ -294,13 +310,18 @@ public class Semantico implements Constants {
     public void execAcao120(Token token) throws SemanticError {
         ts.removeNivelAtual(nivelAtual);
         decrementaNivelAtual();
+        IDMetodo iDMetodo = (IDMetodo) ts.getIdentificador(pilhaIDMetodo.peek());
+        if (!temRetorno && !iDMetodo.isResultadoNulo()) {
+            throw new SemanticError("metodo com tipo deve ter retorno", token.getPosition());
+        }
+        temRetorno = false;
         pilhaDeslocamento.pop();
         pilhaIDMetodo.pop();
         pilhaRetorno.pop();
+
     }
 
     public void execAcao121(Token token) throws SemanticError {
-
         contextoLID = ContextoLID.PAR_FORMAL;
         primeiroID = ts.getSize();
         qtdIDs = 0;
@@ -308,92 +329,206 @@ public class Semantico implements Constants {
     }
 
     public void execAcao122(Token token) throws SemanticError {
-
         ultimoID = primeiroID + ts.getSize();
-
     }
 
     public void execAcao123(Token token) throws SemanticError {
-
         if (tipoAtual == Tipo.CADEIA) {
             subCategoria = SubCategoria.CADEIA;
-            return;
-        }
-        subCategoria = SubCategoria.PRE_DEFINIDO;
-        
-        
-        if (subCategoria != SubCategoria.PRE_DEFINIDO) {
-            throw new SemanticError("Par devem ser de tipo pré-def.", token.getPosition());
         } else {
-            int posicao = primeiroID;            
-            do {                
-                int deslocamento = this.pilhaDeslocamento.pop();
-                Identificador simbolo = ts.getIdentificador((posicao));
-                IDParametro parametro = new IDParametro(simbolo.getNome(), simbolo.getCategoria(), simbolo.getNivel());
-                parametro.setCategoria(Categoria.PARAMETRO);
-                parametro.setTipo(tipoAtual);
-                parametro.setMecanismoDePassagem(mecanismoPassagem);
-                parametro.setDeslocamento(deslocamento);
-                deslocamento++;                
+            subCategoria = SubCategoria.PRE_DEFINIDO;
+        }
+
+        if (subCategoria != SubCategoria.PRE_DEFINIDO) {
+            throw new SemanticError("Par. devem ser de tipo pré-def.", token.getPosition());
+        } else {
+            int indice = primeiroID;
+            do {
+                int deslocamento = pilhaDeslocamento.pop();
+                Identificador identificador = ts.getIdentificador(indice);
+                IDParametro iDParametro = new IDParametro(identificador.getNome(), identificador.getCategoria(), identificador.getNivel());
+                iDParametro.setCategoria(Categoria.PARAMETRO);
+                iDParametro.setMecanismoDePassagem(mecanismoPassagem);
+                iDParametro.setTipo(tipoAtual);
+                iDParametro.setDeslocamento(deslocamento);
+                deslocamento++;
                 pilhaDeslocamento.push(deslocamento);
-                ts.adicionarIdentificadorComPosicao((posicao), parametro);
-                listIDsParametro.add(parametro);
-                posicao++;
-            } while (posicao <= this.ultimoID - 1);
+                ts.adicionarIdentificadorComPosicao(indice, iDParametro);
+                listIDsParametro.add(iDParametro);
+                indice++;
+            } while (indice <= ultimoID - 1);
         }
     }
 
     public void execAcao124(Token token) throws SemanticError {
-        
-        
+        if (tipoAtual == Tipo.CADEIA) {
+            throw new SemanticError("Métodos devem ser de tipo pré-def.", token.getPosition());
+        }
+        resultadoNulo = false;
+        tpResultadoMetodo = tipoAtual;
     }
 
     public void execAcao125(Token token) throws SemanticError {
+        resultadoNulo = true;
     }
 
     public void execAcao126(Token token) throws SemanticError {
+        mecanismoPassagem = MecanismoDePassagem.REFERENCIA;
     }
 
     public void execAcao127(Token token) throws SemanticError {
+        mecanismoPassagem = MecanismoDePassagem.VALOR;
     }
 
     public void execAcao128(Token token) throws SemanticError {
+        if (!ts.isExisteIdentificadorNesteEscopo(nivelAtual, token.getLexeme())) {
+            throw new SemanticError("Identificador não declarado", token.getPosition());
+        }
+        pPOSID.push(ts.getPosicaoIdentificador(nivelAtual, token.getLexeme()));
+
     }
 
     public void execAcao129(Token token) throws SemanticError {
+        Tipo tipoExpr = pTipoExpr.pop();
+
+        if (tipoExpr != Tipo.BOOLEANO && tipoExpr != Tipo.INTEIRO) {
+            throw new SemanticError("Tipo inválido da expressão", token.getPosition());
+        }
+        //* ação de G. código *
     }
 
     public void execAcao130(Token token) throws SemanticError {
+        contextoLID = ContextoLID.LEITURA;
     }
 
     public void execAcao131(Token token) throws SemanticError {
+        pContextoEXPR.push(ContextoEXPR.impressão);
     }
 
     public void execAcao132(Token token) throws SemanticError {
+        if (!pilhaRetorno.isEmpty() && pilhaRetorno.peek()) {
+            Tipo tipoEXPR = pTipoExpr.pop();
+            IDMetodo iDMetodo = (IDMetodo) ts.getIdentificador(pilhaIDMetodo.peek());
+            Tipo tipoMetodo = iDMetodo.getTipo();
+            if (tipoEXPR != tipoMetodo) {
+                if (!((tipoMetodo == Tipo.CADEIA && tipoEXPR == Tipo.CARACTER) || (tipoMetodo == Tipo.REAL && tipoEXPR == Tipo.INTEIRO))) {
+                    throw new SemanticError("Tipo de retorno inválido", token.getPosition());
+                }
+                temRetorno = true;
+            } else {
+                //* ação de Geração de Código *
+                temRetorno = true;
+            }
+        } else {
+            throw new SemanticError("'Retorne' só pode ser usado em método com tipo", token.getPosition());
+        }
     }
 
     public void execAcao133(Token token) throws SemanticError {
+        Identificador identificador = ts.getIdentificador(pPOSID.pop());
+        Categoria categoria = identificador.getCategoria();
+        if (categoria == Categoria.VARIAVEL) {
+            IDVariavel iDVariavel = (IDVariavel) identificador;
+            if (iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel() == SubCategoriasVariavel.VETOR) {
+                throw new SemanticError("id. Deveria ser indexado", token.getPosition());
+            } else {
+                tipoLadoEsq = Utils.getTipo(iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel());
+            }
+        } else if (categoria == Categoria.PARAMETRO) {
+            IDParametro iDParametro = (IDParametro) identificador;
+            tipoLadoEsq = iDParametro.getTipo();
+        } else {
+            throw new SemanticError("id. deveria ser var ou par", token.getPosition());
+        }
     }
 
     public void execAcao134(Token token) throws SemanticError {
+        Tipo tipoExpr = pTipoExpr.pop();
+        if (tipoExpr != tipoLadoEsq) {
+            if (!((tipoExpr == Tipo.CARACTER && tipoLadoEsq == Tipo.CADEIA) || (tipoExpr == Tipo.INTEIRO && tipoLadoEsq == Tipo.REAL))) {
+                throw new SemanticError("tipos incompatíveis", token.getPosition());
+            }
+        } else {
+            // * G. Código *
+        }
     }
 
     public void execAcao135(Token token) throws SemanticError {
+        Identificador identificador = ts.getIdentificador(pPOSID.peek());
+        Categoria categoria = identificador.getCategoria();
+        if (categoria != Categoria.VARIAVEL) {
+            throw new SemanticError("esperava-se uma variável", token.getPosition());
+        } else if (resultadoNulo) {
+            IDVariavel iDVariavel = (IDVariavel) identificador;
+            if (iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel() != SubCategoriasVariavel.VETOR
+                    && iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel() != SubCategoriasVariavel.CADEIA) {
+                throw new SemanticError("apenas vetores e cadeias podem ser indexados", token.getPosition());
+            }
+            pTipoVarIndexada.push(Utils.getTipo(iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel()));
+        }
     }
 
     public void execAcao136(Token token) throws SemanticError {
+        IDVariavel iDVariavel = (IDVariavel) ts.getIdentificador(pPOSID.pop());
+        Tipo tipoExpr = pTipoExpr.pop();
+        if (tipoExpr != Tipo.INTEIRO) {
+            throw new SemanticError("índice deveria ser inteiro", token.getPosition());
+        } else {
+            if (pTipoVarIndexada.pop() == Tipo.CADEIA) {
+                tipoLadoEsq = Tipo.CADEIA;
+            } else {
+                tipoLadoEsq = iDVariavel.getTipoIDVariavel().getTpElementos();
+            }
+        }
+
     }
 
     public void execAcao137(Token token) throws SemanticError {
+        Identificador identificador = ts.getIdentificador(pPOSID.peek());
+        Categoria categoria = identificador.getCategoria();
+        if (categoria != Categoria.METODO) {
+            throw new SemanticError("id deveria ser um método", token.getPosition());
+        }
+        IDMetodo iDMetodo = (IDMetodo) identificador;
+        if (!iDMetodo.isResultadoNulo()) {
+            throw new SemanticError("esperava-se mét sem tipo", token.getPosition());
+        }
+        pIDsParametro.push(iDMetodo.getIDsParametro());
+        pContextoEXPR.push(ContextoEXPR.parAtual);
     }
 
     public void execAcao138(Token token) throws SemanticError {
+        pNPA.push(0);
+        pContextoEXPR.push(ContextoEXPR.parAtual);
     }
 
     public void execAcao139(Token token) throws SemanticError {
+        Identificador identificador = ts.getIdentificador(pPOSID.pop());
+        IDMetodo iDMetodo = (IDMetodo) identificador;
+        if (pNPA.pop() != iDMetodo.getNumeroParametros()) {
+            throw new SemanticError("Erro na quant. de parâmetros", token.getPosition());
+        } else {
+            //* G. Código para chamada de proc*
+            pContextoEXPR.pop();
+            pIDsParametro.pop();
+        }
     }
 
     public void execAcao140(Token token) throws SemanticError {
+        Identificador identificador = ts.getIdentificador(pPOSID.pop());
+        Categoria categoria = identificador.getCategoria();
+        if (categoria != Categoria.METODO) {
+            throw new SemanticError("id deveria ser um método", token.getPosition());
+        }
+        IDMetodo iDMetodo = (IDMetodo) identificador;
+        if (!iDMetodo.isResultadoNulo()) {
+            throw new SemanticError("esperava-se método sem tipo", token.getPosition());
+        }
+        if (iDMetodo.getNumeroParametros() == 0) {
+            //*GC p/ chamada de método *
+        } else {
+            throw new SemanticError("Erro na quantidade de parametros", token.getPosition());
+        }
     }
 
     public void execAcao141(Token token) throws SemanticError {

@@ -5,6 +5,7 @@
 package semantico;
 
 import java.util.List;
+import java.util.Stack;
 
 /**
  *
@@ -12,7 +13,6 @@ import java.util.List;
  */
 public class IDMetodo extends Identificador {
 
-    
     private int enderecoPrimeiraInstrucao;
     private int numeroParametros;
     private List<IDParametro> iDParametros;
@@ -55,8 +55,6 @@ public class IDMetodo extends Identificador {
         this.tipo = tipo;
         this.resultadoNulo = resultadoNulo;
     }
-    
-    
 
     /**
      * @return the enderecoPrimeiraInstrucao
@@ -127,5 +125,12 @@ public class IDMetodo extends Identificador {
     public void setResultadoNulo(boolean resultadoNulo) {
         this.resultadoNulo = resultadoNulo;
     }
-    
+
+    public Stack<IDParametro> getIDsParametro() {
+        Stack<IDParametro> stack = new Stack<>();
+        for (int i = iDParametros.size() - 1; i >= 0; i--) {
+            stack.push(iDParametros.get(i));
+        }
+        return stack;
+    }
 }
