@@ -91,6 +91,7 @@ public class Semantico implements Constants {
         pTipoExpr = new Stack<>();
         pTipoExprSimples = new Stack<>();
         pTipoVarIndexada = new Stack<>();
+        pContextoEXPR = new Stack<>();
         pTipoTermo = new Stack<>();
         pTipoFator = new Stack<>();
         pOpNeg = new Stack<>();
@@ -110,12 +111,10 @@ public class Semantico implements Constants {
             execAcao.invoke(this, token);
         } catch (InvocationTargetException e) {
             Throwable targetException = e.getTargetException();
-            //if (targetException instanceof SemanticError) {
-            // SemanticError semanticError = (SemanticError) targetException;
-            //semanticError.setPosition(token.getPosition()); verificar este caso 
-            // throw semanticError;
-            // }
-            throw new SemanticError("Erro SEMÂNTICO: " + targetException);
+            if (targetException instanceof SemanticError) {
+                SemanticError semanticError = (SemanticError) targetException;
+                throw semanticError;
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Erro");
             throw new RuntimeException(e);
@@ -123,10 +122,10 @@ public class Semantico implements Constants {
     }
 
     public void execAcao101(Token token) {
-        ts.adicionarIdentificador(new Identificador(token.getLexeme(), Categoria.PROGRAMA, 0));
         nivelAtual = 0;
         pilhaDeslocamento.push(0);
         incrementaNivelAtual();
+        ts.adicionarIdentificador(new Identificador(token.getLexeme(), Categoria.PROGRAMA, 0));
     }
 
     public void execAcao102(Token token) {
@@ -595,7 +594,7 @@ public class Semantico implements Constants {
 
     //VERIFICAR NOVAMENTE
     public void execAcao143(Token token) throws SemanticError {
-
+        TipoOpRel operador = pOpRel.pop();
         Tipo tipoExp = pTipoExpr.pop();
         Tipo tipoExpSimples = pTipoExprSimples.pop();
 
@@ -610,7 +609,7 @@ public class Semantico implements Constants {
             this.pTipoExpr.push(Tipo.BOOLEANO);
         }
 
-        if (!this.pContextoEXPR.isEmpty() && this.pContextoEXPR.peek() == ContextoEXPR.parAtual) {
+        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
             pilhaEReferencia.pop();
             pilhaEReferencia.push(MecanismoDePassagem.VALOR);
         }
@@ -850,6 +849,7 @@ public class Semantico implements Constants {
             if (!(!this.pOpNeg.isEmpty() && this.pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
                 pilhaEReferencia.push(MecanismoDePassagem.VALOR);
             }
+
         }
     }
 
@@ -1011,5 +1011,4 @@ public class Semantico implements Constants {
         }
         valConst = token.getLexeme();
     }
-
 }
