@@ -59,7 +59,7 @@ public class Semantico implements Constants {
     private String valConst;
     private int numElementos;
     private int NPF;
-    private List<IDParametro> listIDsParametro = new ArrayList<>();
+    private List<IDParametro> listIDsParametro;
     private boolean resultadoNulo;
     private Tipo tpResultadoMetodo;
     private MecanismoDePassagem mecanismoPassagem;
@@ -102,6 +102,7 @@ public class Semantico implements Constants {
         pIDsParametro = new Stack<>();
         pNPA = new Stack<>();
         pilhaEReferencia = new Stack<>();
+        listIDsParametro = new ArrayList<>();
     }
 
     public void executeAction(int action, Token token) throws SemanticError {
@@ -143,38 +144,37 @@ public class Semantico implements Constants {
         int deslocamento = pilhaDeslocamento.pop();
         do {
             if (Categoria.CONSTANTE == categoriaAtual) {
-                Identificador simbolo = ts.getIdentificador(i);
-                IDConstante iDConstante = new IDConstante(simbolo.getNome(), simbolo.getCategoria(), simbolo.getNivel());
+                Identificador identificador = ts.getIdentificador(i);
+                IDConstante iDConstante = new IDConstante(identificador.getNome(), identificador.getCategoria(), identificador.getNivel());
                 iDConstante.setValor(valConst);
-                iDConstante.setCategoria(this.categoriaAtual);
+                iDConstante.setCategoria(categoriaAtual);
                 iDConstante.setTipo(tipoAtual);
                 ts.adicionarIdentificadorComPosicao(i, iDConstante);
             } else if (Categoria.VARIAVEL == categoriaAtual) {
-                Identificador simbolo = ts.getIdentificador(i);
-                IDVariavel variavel = new IDVariavel(simbolo.getNome(), simbolo.getCategoria(), simbolo.getNivel());
-                if (this.subCategoria == SubCategoria.PRE_DEFINIDO) {
-                    variavel.setCategoria(categoriaAtual);
-                    variavel.setTipoIDVariavel(new TipoIDVariavel(Utils.getSubCategoriasVariavel(tipoAtual), null, 0));
-                    variavel.setDeslocamento(deslocamento);
+                Identificador identificador = ts.getIdentificador(i);
+                IDVariavel iDVariavel = new IDVariavel(identificador.getNome(), identificador.getCategoria(), identificador.getNivel());
+                if (subCategoria == SubCategoria.PRE_DEFINIDO) {
+                    iDVariavel.setCategoria(categoriaAtual);
+                    iDVariavel.setTipoIDVariavel(new TipoIDVariavel(Utils.getSubCategoriasVariavel(tipoAtual), null, 0));
+                    iDVariavel.setDeslocamento(deslocamento);
                     deslocamento++;
                 }
-                if (this.subCategoria == SubCategoria.CADEIA) {;
-                    variavel.setCategoria(categoriaAtual);
-                    variavel.setTipoIDVariavel(new TipoIDVariavel(Utils.getSubCategoriasVariavel(tipoAtual), null, Integer.parseInt(valConst)));
-                    variavel.setDeslocamento(deslocamento);
+                if (subCategoria == SubCategoria.CADEIA) {;
+                    iDVariavel.setCategoria(categoriaAtual);
+                    iDVariavel.setTipoIDVariavel(new TipoIDVariavel(Utils.getSubCategoriasVariavel(tipoAtual), null, Integer.parseInt(valConst)));
+                    iDVariavel.setDeslocamento(deslocamento);
                     deslocamento++;
                 }
-                if (this.subCategoria == SubCategoria.VETOR) {
-                    variavel.setCategoria(categoriaAtual);
-                    variavel.setTipoIDVariavel(new TipoIDVariavel(SubCategoriasVariavel.VETOR, tipoAtual, numElementos));
-
-                    variavel.setDeslocamento(deslocamento);
+                if (subCategoria == SubCategoria.VETOR) {
+                    iDVariavel.setCategoria(categoriaAtual);
+                    iDVariavel.setTipoIDVariavel(new TipoIDVariavel(SubCategoriasVariavel.VETOR, tipoAtual, numElementos));
+                    iDVariavel.setDeslocamento(deslocamento);
                     deslocamento += numElementos;
                 }
-                this.ts.adicionarIdentificadorComPosicao(i, variavel);
+                ts.adicionarIdentificadorComPosicao(i, iDVariavel);
             }
             i++;
-        } while (i != this.ultimoID);
+        } while (i != ultimoID);
         pilhaDeslocamento.push(deslocamento);
     }
 
@@ -275,11 +275,8 @@ public class Semantico implements Constants {
 
         if (subCategoria == SubCategoria.CADEIA || subCategoria == SubCategoria.VETOR) {
             throw new SemanticError("Apenas id de tipo pré-def podem ser declarados como constante", token.getPosition());
-        } else {
-            categoriaAtual = Categoria.CONSTANTE;
         }
-
-
+        categoriaAtual = Categoria.CONSTANTE;
     }
 
     public void execAcao115(Token token) throws SemanticError {
@@ -479,7 +476,7 @@ public class Semantico implements Constants {
         Categoria categoria = identificador.getCategoria();
         if (categoria != Categoria.VARIAVEL) {
             throw new SemanticError("esperava-se uma variável", token.getPosition());
-        } else if (resultadoNulo) {
+        } else {
             IDVariavel iDVariavel = (IDVariavel) identificador;
             if (iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel() != SubCategoriasVariavel.VETOR
                     && iDVariavel.getTipoIDVariavel().getSubCategoriasVariavel() != SubCategoriasVariavel.CADEIA) {
@@ -555,13 +552,11 @@ public class Semantico implements Constants {
     //VERIFICAR NOVAMENTE, OS 2 THROWS NO MEIO, PRECISAM?
     public void execAcao141(Token token) throws SemanticError {
         if (pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-
             int NPA = pNPA.pop();
-
             if (!pIDsParametro.peek().isEmpty()) {
                 Tipo tipoE = pTipoExpr.pop();
                 IDParametro iDParametro = pIDsParametro.peek().pop();
-                MecanismoDePassagem eRef = pilhaEReferencia.pop();
+                MecanismoDePassagem mecanismoDePassagem = pilhaEReferencia.pop();
 
                 if (tipoE != iDParametro.getTipo()) {
                     if (!(iDParametro.getTipo() == Tipo.REAL && tipoE == Tipo.INTEIRO) && !(iDParametro.getTipo() == Tipo.CADEIA && tipoE == Tipo.CARACTER)) {
@@ -569,7 +564,7 @@ public class Semantico implements Constants {
                     }
                 }
 
-                if (iDParametro.getMecanismoDePassagem() != eRef) {
+                if (iDParametro.getMecanismoDePassagem() != mecanismoDePassagem) {
                     if (iDParametro.getMecanismoDePassagem() == MecanismoDePassagem.REFERENCIA) {
                         throw new SemanticError("Esperava passagem por Referencia", token.getPosition());
                     }

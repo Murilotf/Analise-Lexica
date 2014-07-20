@@ -42,7 +42,7 @@ public class TabelaSimbolos {
     }
 
     public void adicionarIdentificadorComPosicao(int posicao, Identificador identificador) {
-        this.identificadores.add(posicao, identificador);
+        this.identificadores.set(posicao, identificador);
     }
 
     public void removeIdentificador(Identificador identificador) {

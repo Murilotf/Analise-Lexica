@@ -27,7 +27,7 @@ public class Utils {
             case BOOLEANO:
                 return SubCategoriasVariavel.BOOLEANO;
             default:
-                return null;
+                return SubCategoriasVariavel.BOOLEANO;
         }
 
     }
@@ -45,7 +45,7 @@ public class Utils {
             case REAL:
                 return Tipo.REAL;
             default:
-                return null;
+                return Tipo.BOOLEANO;
         }
     }
 }
