@@ -2,7 +2,7 @@ package gals;
 
 public interface ParserConstants
 {
-    int START_SYMBOL = 58;
+     int START_SYMBOL = 58;
 
     int FIRST_NON_TERMINAL    = 58;
     int FIRST_SEMANTIC_ACTION = 92;
@@ -61,8 +61,8 @@ public interface ParserConstants
         {   2, 205,  79 },
         {   7,  72 },
         {   0 },
-        { 206,  11,  61 },
-        {   0 },
+        { 206,  11,  61, 207 },
+        { 208 },
         {  66,   6,  65 },
         {   0 },
         {  53,   2, 209,  78, 210,  90, 211,   6,  59, 212 },
