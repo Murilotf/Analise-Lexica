@@ -187,17 +187,19 @@ public class Semantico implements Constants {
                     iDVariavel.setDeslocamento(deslocamento);
                     deslocamento++;
                 }
-                if (subCategoria == SubCategoria.CADEIA) {;
-                    iDVariavel.setCategoria(categoriaAtual);
-                    iDVariavel.setTipoIDVariavel(new TipoIDVariavel(getSubCategoriasVariavel(tipoAtual), null, Integer.parseInt(valConst)));
-                    iDVariavel.setDeslocamento(deslocamento);
-                    deslocamento++;
-                }
+
                 if (subCategoria == SubCategoria.VETOR) {
                     iDVariavel.setCategoria(categoriaAtual);
                     iDVariavel.setTipoIDVariavel(new TipoIDVariavel(SubCategoriasVariavel.VETOR, tipoAtual, numElementos));
                     iDVariavel.setDeslocamento(deslocamento);
                     deslocamento += numElementos;
+                }
+
+                if (subCategoria == SubCategoria.CADEIA) {;
+                    iDVariavel.setCategoria(categoriaAtual);
+                    iDVariavel.setTipoIDVariavel(new TipoIDVariavel(getSubCategoriasVariavel(tipoAtual), null, Integer.parseInt(valConst)));
+                    iDVariavel.setDeslocamento(deslocamento);
+                    deslocamento++;
                 }
                 ts.adicionarIdentificadorComPosicao(i, iDVariavel);
             }
@@ -358,12 +360,9 @@ public class Semantico implements Constants {
      */
     public void execAcao115(Token token) throws SemanticError {
 
-        if (tipoConst != tipoAtual) {
-            if (!(tipoAtual == Tipo.REAL && tipoConst == Tipo.INTEIRO)) {
-                throw new SemanticError("Tipo da constante incorreto", token.getPosition());
-            }
+        if (tipoConst != tipoAtual && !(tipoAtual == Tipo.REAL && tipoConst == Tipo.INTEIRO)) {
+            throw new SemanticError("Tipo da constante incorreto", token.getPosition());
         }
-
     }
 
     /**
@@ -802,7 +801,6 @@ public class Semantico implements Constants {
         pOpRel.pop();
         Tipo tipoExp = pTipoExpr.pop();
         Tipo tipoExpSimples = pTipoExprSimples.pop();
-
         if (tipoExp != tipoExpSimples) {
             if ((tipoExp == Tipo.INTEIRO && tipoExpSimples == Tipo.REAL) || (tipoExp == Tipo.REAL && tipoExpSimples == Tipo.INTEIRO)
                     || (tipoExp == Tipo.CADEIA && tipoExpSimples == Tipo.CARACTER) || (tipoExp == Tipo.CARACTER && tipoExpSimples == Tipo.CADEIA)) {
@@ -1091,9 +1089,8 @@ public class Semantico implements Constants {
      * @throws SemanticError
      */
     public void execAcao164(Token token) throws SemanticError {
-        Tipo tipo = pTipoFator.peek();
-        if (tipo != Tipo.BOOLEANO) {
-            throw new SemanticError("Op. ‘não’ exige operando bool.", token.getPosition());
+        if (pTipoFator.peek() != Tipo.BOOLEANO) {
+            throw new SemanticError("Op. 'não' exige operando bool.", token.getPosition());
         }
         pOpNeg.pop();
 
@@ -1148,12 +1145,9 @@ public class Semantico implements Constants {
         pTipoFator.push(pTipoExpr.pop());
         pOpNeg.pop();
         pOpUn.pop();
-        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-            if ((!pOpNeg.isEmpty() && pOpNeg.peek()) || (!pOpUn.isEmpty() && pOpUn.peek())) {
-                pilhaEReferencia.pop();
-                pilhaEReferencia.push(MecanismoDePassagem.VALOR);
-            }
-
+        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && ((!pOpNeg.isEmpty() && pOpNeg.peek()) || (!pOpUn.isEmpty() && pOpUn.peek()))) {
+            pilhaEReferencia.pop();
+            pilhaEReferencia.push(MecanismoDePassagem.VALOR);
         }
     }
 
@@ -1174,11 +1168,8 @@ public class Semantico implements Constants {
      */
     public void execAcao170(Token token) throws SemanticError {
         pTipoFator.push(tipoConst);
-        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-            if (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                pilhaEReferencia.push(MecanismoDePassagem.VALOR);
-            }
-
+        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+            pilhaEReferencia.push(MecanismoDePassagem.VALOR);
         }
     }
 
@@ -1218,12 +1209,9 @@ public class Semantico implements Constants {
         }
         this.pContextoEXPR.push(ContextoEXPR.parAtual);
 
-        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-            if (!(!pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                pilhaEReferencia.push(MecanismoDePassagem.VALOR);
-            }
+        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+            pilhaEReferencia.push(MecanismoDePassagem.VALOR);
         }
-
         pIDsParametro.pop();
     }
 
@@ -1245,10 +1233,8 @@ public class Semantico implements Constants {
             }
         }
 
-        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-            if (!(!pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                pilhaEReferencia.push(MecanismoDePassagem.REFERENCIA);
-            }
+        if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+            pilhaEReferencia.push(MecanismoDePassagem.REFERENCIA);
         }
     }
 
@@ -1272,10 +1258,8 @@ public class Semantico implements Constants {
                 tipoVariavel = parametro.getTipo();
             }
 
-            if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-                if (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                    this.pilhaEReferencia.push(MecanismoDePassagem.REFERENCIA);
-                }
+            if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+                this.pilhaEReferencia.push(MecanismoDePassagem.REFERENCIA);
             }
 
         } else {
@@ -1290,10 +1274,8 @@ public class Semantico implements Constants {
                         tipoVariavel = metodo.getTipo();
                     }
 
-                    if (!this.pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-                        if (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                            this.pilhaEReferencia.push(MecanismoDePassagem.VALOR);
-                        }
+                    if (!this.pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+                        this.pilhaEReferencia.push(MecanismoDePassagem.VALOR);
                     }
                 }
 
@@ -1301,11 +1283,8 @@ public class Semantico implements Constants {
                 if (identificador.getCategoria() == Categoria.CONSTANTE) {
                     IDConstante iDConstante = (IDConstante) identificador;
                     tipoVariavel = iDConstante.getTipo();
-                    if (!this.pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
-
-                        if (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
-                            this.pilhaEReferencia.push(MecanismoDePassagem.VALOR);
-                        }
+                    if (!this.pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual && (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek()))) {
+                        this.pilhaEReferencia.push(MecanismoDePassagem.VALOR);
                     }
                 } else {
                     throw new SemanticError("esperava-se var,id-método ou constante", token.getPosition());
@@ -1409,9 +1388,8 @@ public class Semantico implements Constants {
                 return Tipo.BOOLEANO;
         }
     }
-    
-    
-        /**
+
+    /**
      *
      * @param tipo
      * @return
