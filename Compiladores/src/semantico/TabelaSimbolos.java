@@ -120,15 +120,15 @@ public class TabelaSimbolos {
     }
 
     public Identificador getIdentificadorNoNivel(int nivel, String nome) {
-        Identificador resultado = new Identificador("", -1);
+        Identificador retorno = new Identificador("", -1);
         for (Identificador identificador : identificadores) {
-            if ((identificador.getNome().equals(nome) && identificador.getNivel() <= nivel) && identificador.getNivel() > resultado.getNivel()) {
-                resultado = identificador;
+            if ((identificador.getNome().equals(nome) && identificador.getNivel() <= nivel) && identificador.getNivel() > retorno.getNivel()) {
+                retorno = identificador;
             }
         }
-        if (resultado.getNome().equals("")) {
+        if ("".equals(retorno.getNome())) {
             return null;
         }
-        return resultado;
+        return retorno;
     }
 }
