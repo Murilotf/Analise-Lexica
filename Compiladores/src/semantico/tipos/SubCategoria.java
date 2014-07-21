@@ -2,16 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package semantico;
+package semantico.tipos;
 
 /**
  *
  * @author Avell G1511
  */
-public enum Categoria {
+public enum SubCategoria {
 
-    //comentario
-    
-    PROGRAMA, CONSTANTE, VARIAVEL, METODO, PARAMETRO
-
+    PRE_DEFINIDO, CADEIA, VETOR;
 }

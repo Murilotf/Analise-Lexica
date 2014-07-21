@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package semantico;
+package semantico.tipos;
 
 /**
  *
  * @author Avell G1511
  */
-public enum Tipo {
+public enum ContextoLID {
     
-    INTEIRO, REAL, CARACTER, BOOLEANO, CADEIA;
+    DECL, PAR_FORMAL, LEITURA;
     
 }

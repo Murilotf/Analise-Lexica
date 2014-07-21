@@ -4,6 +4,7 @@
  */
 package semantico;
 
+import semantico.identificadores.Identificador;
 import java.util.ArrayList;
 import java.util.List;
 

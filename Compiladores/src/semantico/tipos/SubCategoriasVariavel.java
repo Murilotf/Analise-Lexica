@@ -2,13 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package semantico;
+package semantico.tipos;
 
 /**
  *
  * @author Avell G1511
  */
-public enum MecanismoDePassagem {
+public enum SubCategoriasVariavel {
 
-    VALOR, REFERENCIA;
+    INTEIRO, REAL, BOOLEANO, CARACTER, CADEIA, VETOR;
 }
