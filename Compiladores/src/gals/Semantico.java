@@ -83,7 +83,6 @@ public class Semantico implements Constants {
     }
 
     public Semantico() {
-        ts = new TabelaSimbolos();
         pilhaDeslocamento = new Stack<>();
         pilhaIDMetodo = new Stack<>();
         pilhaRetorno = new Stack<>();
@@ -124,6 +123,7 @@ public class Semantico implements Constants {
     }
 
     public void execAcao101(Token token) {
+        ts = new TabelaSimbolos();
         nivelAtual = 0;
         pilhaDeslocamento.push(0);
         ts.adicionarIdentificador(new Identificador(token.getLexeme(), Categoria.PROGRAMA, 0));
@@ -221,9 +221,10 @@ public class Semantico implements Constants {
     public void execAcao112(Token token) {
         if (tipoAtual == Tipo.CADEIA) {
             subCategoria = SubCategoria.CADEIA;
-            return;
+        } else {
+            subCategoria = SubCategoria.PRE_DEFINIDO;
         }
-        subCategoria = SubCategoria.PRE_DEFINIDO;
+
     }
 
     public void execAcao113(Token token) throws SemanticError {
@@ -237,8 +238,8 @@ public class Semantico implements Constants {
             if (ts.isExisteIdentificadorNesteNivel(nivelAtual, token.getLexeme())) {
                 throw new SemanticError("Id de parâmetro repetido", token.getPosition());
             }
-            incrementaNPF();
             ts.adicionarIdentificador(new IDParametro(token.getLexeme(), nivelAtual));
+            incrementaNPF();
             incrementaQtdIDs();
         } else if (contextoLID == ContextoLID.LEITURA) {
             if (!(ts.isExisteIdentificadorNesteEscopo(nivelAtual, token.getLexeme()))) {
@@ -280,7 +281,9 @@ public class Semantico implements Constants {
     public void execAcao115(Token token) throws SemanticError {
 
         if (tipoConst != tipoAtual) {
-            throw new SemanticError("Tipo da constante incorreto", token.getPosition());
+            if (!(tipoAtual == Tipo.REAL && tipoConst == Tipo.INTEIRO)) {
+                throw new SemanticError("Tipo da constante incorreto", token.getPosition());
+            }
         }
 
     }
@@ -345,7 +348,7 @@ public class Semantico implements Constants {
     }
 
     public void execAcao122(Token token) throws SemanticError {
-        ultimoID = primeiroID + ts.getSize();
+        ultimoID = primeiroID + qtdIDs;
     }
 
     public void execAcao123(Token token) throws SemanticError {
@@ -777,7 +780,7 @@ public class Semantico implements Constants {
         if (tipo != Tipo.BOOLEANO) {
             throw new SemanticError("Op. ‘não’ exige operando bool.", token.getPosition());
         }
-        pOpNeg.push(false);
+        //pOpNeg.push(false);
         pOpNeg.pop();
 
 
