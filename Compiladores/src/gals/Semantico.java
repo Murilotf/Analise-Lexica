@@ -116,6 +116,7 @@ public class Semantico implements Constants {
                 SemanticError semanticError = (SemanticError) targetException;
                 throw semanticError;
             }
+            e.printStackTrace();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Erro");
             throw new RuntimeException(e);
@@ -125,7 +126,6 @@ public class Semantico implements Constants {
     public void execAcao101(Token token) {
         nivelAtual = 0;
         pilhaDeslocamento.push(0);
-        incrementaNivelAtual();
         ts.adicionarIdentificador(new Identificador(token.getLexeme(), Categoria.PROGRAMA, 0));
     }
 
@@ -253,16 +253,14 @@ public class Semantico implements Constants {
                 if (Categoria.VARIAVEL == categoria) {
                     IDVariavel idVariavel = (IDVariavel) identificador;
 
-                    // Essa expressão está errada nao? Vc ta dizendo que se for booleano ou vetor está ok a leitura
-                    if (!(idVariavel.getTipoIDVariavel().getSubCategoriasVariavel() == SubCategoriasVariavel.BOOLEANO
-                            || idVariavel.getTipoIDVariavel().getSubCategoriasVariavel() == SubCategoriasVariavel.VETOR)) {
+                    if (idVariavel.getTipoIDVariavel().getSubCategoriasVariavel() == SubCategoriasVariavel.BOOLEANO
+                            || idVariavel.getTipoIDVariavel().getSubCategoriasVariavel() == SubCategoriasVariavel.VETOR) {
                         throw new SemanticError("Tipo inv. p/ leitura", token.getPosition());
                     }
                 }
                 if (Categoria.PARAMETRO == categoria) {
                     IDParametro iDParametro = (IDParametro) identificador;
-                    // Essa expressão está errada nao? Vc ta dizendo que se for booleano está ok o parametro
-                    if (!(Tipo.BOOLEANO == iDParametro.getTipo())) {
+                    if (Tipo.BOOLEANO == iDParametro.getTipo()) {
                         throw new SemanticError("Tipo inv. p/ leitura", token.getPosition());
                     }
                 }
@@ -549,7 +547,6 @@ public class Semantico implements Constants {
         }
     }
 
-    //VERIFICAR NOVAMENTE, OS 2 THROWS NO MEIO, PRECISAM?
     public void execAcao141(Token token) throws SemanticError {
         if (pContextoEXPR.peek() == ContextoEXPR.parAtual) {
             int NPA = pNPA.pop();
@@ -557,21 +554,15 @@ public class Semantico implements Constants {
                 Tipo tipoE = pTipoExpr.pop();
                 IDParametro iDParametro = pIDsParametro.peek().pop();
                 MecanismoDePassagem mecanismoDePassagem = pilhaEReferencia.pop();
-
-                if (tipoE != iDParametro.getTipo()) {
-                    if (!(iDParametro.getTipo() == Tipo.REAL && tipoE == Tipo.INTEIRO) && !(iDParametro.getTipo() == Tipo.CADEIA && tipoE == Tipo.CARACTER)) {
-                        throw new SemanticError("Não há correpondecia entre parametro Atual e parametro Formal", token.getPosition());
-                    }
+                if (tipoE != iDParametro.getTipo() && !(iDParametro.getTipo() == Tipo.REAL && tipoE == Tipo.INTEIRO) && !(iDParametro.getTipo() == Tipo.CADEIA && tipoE == Tipo.CARACTER)) {
+                    throw new SemanticError("Incompatibilidade entre parâmetro atual e parâmetro formal", token.getPosition());
                 }
-
-                if (iDParametro.getMecanismoDePassagem() != mecanismoDePassagem) {
-                    if (iDParametro.getMecanismoDePassagem() == MecanismoDePassagem.REFERENCIA) {
-                        throw new SemanticError("Esperava passagem por Referencia", token.getPosition());
-                    }
+                if (iDParametro.getMecanismoDePassagem() != mecanismoDePassagem && iDParametro.getMecanismoDePassagem() == MecanismoDePassagem.REFERENCIA) {
+                    throw new SemanticError("Mecanismo de passagem incompatível. Esperava-se passagem por referência", token.getPosition());
                 }
             }
             NPA++;
-            this.pNPA.push(NPA);
+            pNPA.push(NPA);
         }
         if (pContextoEXPR.peek() == ContextoEXPR.impressão) {
             Tipo tipoExp = pTipoExpr.pop();
@@ -589,7 +580,7 @@ public class Semantico implements Constants {
 
     //VERIFICAR NOVAMENTE
     public void execAcao143(Token token) throws SemanticError {
-        TipoOpRel operador = pOpRel.pop();
+        pOpRel.pop();
         Tipo tipoExp = pTipoExpr.pop();
         Tipo tipoExpSimples = pTipoExprSimples.pop();
 
@@ -601,9 +592,8 @@ public class Semantico implements Constants {
                 throw new SemanticError("Operandos incompatíveis", token.getPosition());
             }
         } else {
-            this.pTipoExpr.push(Tipo.BOOLEANO);
+            pTipoExpr.push(Tipo.BOOLEANO);
         }
-
         if (!pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
             pilhaEReferencia.pop();
             pilhaEReferencia.push(MecanismoDePassagem.VALOR);
@@ -762,11 +752,11 @@ public class Semantico implements Constants {
     }
 
     public void execAcao161(Token token) throws SemanticError {
-        pOpMult.push(TipoOpMult.Op_DIV);
+        pOpMult.push(TipoOpMult.Op_E);
     }
 
     public void execAcao162(Token token) throws SemanticError {
-        pOpMult.push(TipoOpMult.Op_E);
+        pOpMult.push(TipoOpMult.Op_DIV);
     }
 
     public void execAcao163(Token token) throws SemanticError {
@@ -810,7 +800,7 @@ public class Semantico implements Constants {
         if (tipo != Tipo.INTEIRO && tipo != Tipo.REAL) {
             throw new SemanticError("Op. unário exige operando num.", token.getPosition());
         }
-        pOpUn.push(false);
+        //pOpUn.push(false);
         pOpUn.pop();
     }
 
@@ -860,7 +850,7 @@ public class Semantico implements Constants {
             }
             this.pIDsParametro.push(metodo.getIDsParametro());
         }
-
+        pNPA.push(0);
         pContextoEXPR.push(ContextoEXPR.parAtual);
     }
 
@@ -946,11 +936,11 @@ public class Semantico implements Constants {
 
             } else {
                 if (identificador.getCategoria() == Categoria.CONSTANTE) {
-                    IDConstante constante = (IDConstante) identificador;
-                    tipoVariavel = constante.getTipo();
-                    if (!this.pContextoEXPR.isEmpty() && this.pContextoEXPR.peek() == ContextoEXPR.parAtual) {
+                    IDConstante iDConstante = (IDConstante) identificador;
+                    tipoVariavel = iDConstante.getTipo();
+                    if (!this.pContextoEXPR.isEmpty() && pContextoEXPR.peek() == ContextoEXPR.parAtual) {
 
-                        if (!(!this.pOpNeg.isEmpty() && this.pOpNeg.peek()) && !(!this.pOpUn.isEmpty() && this.pOpUn.peek())) {
+                        if (!(!this.pOpNeg.isEmpty() && pOpNeg.peek()) && !(!pOpUn.isEmpty() && pOpUn.peek())) {
                             this.pilhaEReferencia.push(MecanismoDePassagem.VALOR);
                         }
                     }

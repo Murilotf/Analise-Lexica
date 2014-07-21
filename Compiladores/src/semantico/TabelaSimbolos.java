@@ -13,9 +13,6 @@ import java.util.List;
  */
 public class TabelaSimbolos {
 
-    
-    //COMENTARIO
-    
     private List<Identificador> identificadores;
 
     public TabelaSimbolos() {
@@ -37,49 +34,49 @@ public class TabelaSimbolos {
     }
 
     public void adicionarIdentificador(Identificador identificador) {
-        this.identificadores.add(identificador);
+        identificadores.add(identificador);
 
     }
 
     public void adicionarIdentificadorComPosicao(int posicao, Identificador identificador) {
-        this.identificadores.set(posicao, identificador);
+        identificadores.set(posicao, identificador);
     }
 
     public void removeIdentificador(Identificador identificador) {
-        this.identificadores.remove(identificador);
+        identificadores.remove(identificador);
     }
 
     public void removeIdentificadorPelaPosicao(int posicao) {
-        this.identificadores.remove(posicao);
+        identificadores.remove(posicao);
     }
 
     public Boolean contains(Identificador identificador) {
-        if (this.identificadores.contains(identificador)) {
+        if (identificadores.contains(identificador)) {
             return true;
         }
         return false;
     }
 
     public Identificador getIdentificador(int posicao) {
-        return this.identificadores.get(posicao);
+        return identificadores.get(posicao);
     }
 
     public int getSize() {
-        return this.identificadores.size();
+        return identificadores.size();
     }
 
     public void clear() {
-        this.identificadores.clear();
+        identificadores.clear();
     }
 
     public void removeIdentificadorNoNivel(int nivel, Identificador param) {
+        Identificador object = new Identificador();
         for (Identificador identificador : identificadores) {
             if (identificador.equals(param) && identificador.getNivel() == nivel) {
-                this.identificadores.remove(identificador);
-                return;
+                object = identificador;
             }
         }
-        //NAO ENCONTRADO??
+        identificadores.remove(object);
     }
 
     public Boolean isExisteIdentificadorNesteEscopo(int nivel, String nome) {
@@ -93,7 +90,7 @@ public class TabelaSimbolos {
 
     public Boolean isExisteIdentificadorNesteNivel(int nivel, String nome) {
         for (Identificador identificador : identificadores) {
-            if (identificador.getNome().equals(nome) && (identificador.getNivel() == nivel || identificador.getNivel() == 0)) {
+            if (identificador.getNome().equals(nome) && (identificador.getNivel() == nivel || identificador.getNivel() == -1)) {
                 return true;
             }
         }
@@ -103,33 +100,35 @@ public class TabelaSimbolos {
     }
 
     public Integer getPosicaoIdentificador(int nivel, String nome) {
-
-        for (int i = 0; i < this.identificadores.size(); i++) {
-            if ((this.identificadores.get(i).getNome().equals(nome) && this.identificadores.get(i).getNivel() <= nivel)
-                    && (this.identificadores.get(i).getNivel() > 0)) {
-                return i;
+        int retorno = 0;
+        for (int i = 0; i < identificadores.size(); i++) {
+            if ((identificadores.get(i).getNome().equals(nome) && identificadores.get(i).getNivel() <= nivel)
+                    && (identificadores.get(i).getNivel() > -1)) {
+                retorno = i;
             }
         }
-        return 0;
+        return retorno;
     }
 
     public void removeNivelAtual(int nivelAtual) {
-        for (int i = 0; i < this.identificadores.size(); i++) {
+        for (int i = 0; i < identificadores.size(); i++) {
             if (nivelAtual == identificadores.get(i).getNivel()) {
                 identificadores.remove(i);
-                //NAO ENTENDI O i--
                 i--;
             }
         }
     }
 
     public Identificador getIdentificadorNoNivel(int nivel, String nome) {
-
+        Identificador resultado = new Identificador("", -1);
         for (Identificador identificador : identificadores) {
-            if ((identificador.getNome().equals(nome) && identificador.getNivel() <= nivel) && identificador.getNivel() > 0) {
-                return identificador;
+            if ((identificador.getNome().equals(nome) && identificador.getNivel() <= nivel) && identificador.getNivel() > resultado.getNivel()) {
+                resultado = identificador;
             }
         }
-        return null;
+        if (resultado.getNome().equals("")) {
+            return null;
+        }
+        return resultado;
     }
 }
